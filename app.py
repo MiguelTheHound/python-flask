@@ -1,5 +1,5 @@
 #Importação das dependência necessárias
-from flask import Flask
+from flask import Flask , request
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -17,3 +17,9 @@ class Product(db.Model):
     descricao = db.Column(db.Text, nullable=True)
 
 # Definição das rotas e funções
+
+@app.route('/api/products/add' , methods=["POST"])
+
+def add_product():
+    dados = request.json
+    return dados
