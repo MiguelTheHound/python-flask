@@ -1,16 +1,26 @@
 #Importação das dependência necessárias
 from flask import Flask , request, jsonify
-
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_login import UserMixin
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 
 db = SQLAlchemy(app)
 
+CORS(app)
+
+#Criação do Lgin e do Logout
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    Username = db.Column(db.String(120), nullable=False, unique=True)
+    password = db.Column(db.String(80), nullable=False)
+
+
+
 #Modelagem do banco de dados(id,nome,preço,descrição)
-class Product(db.Model):
+class Product(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
     preco = db.Column(db.Float, nullable=False)
@@ -78,7 +88,27 @@ def update_product(product_id):
     if 'description' in data :
         product.description = ['description']
 
+    db.session.commit()
     return jsonify({"message":"Dados actualizados"})
+
+@app.route('/api/products' , methods=['GET'])
+
+def get_product(product_id):
+    products = Product.query.all()
+    product_list = []
+    for product in products:
+        product_data =({
+            "id" : product.id ,
+            "name" : product.name,
+            "price" : product.price,
+            "description" : product.description
+        })
+        product_list.append(product_data)
+
+    return jsonify(product_list)
+
+
+    
 
 
 
