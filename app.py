@@ -2,7 +2,7 @@
 from flask import Flask , request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, login_required, login_user, LoginManager
+from flask_login import UserMixin, login_required, login_user, LoginManager, logout_user
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "minha_chave_123"
@@ -11,7 +11,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 login_manager = LoginManager()
 db = SQLAlchemy(app)
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.log_view = 'login'
 CORS(app)
 
 #Criação do Lgin e do Logout
@@ -28,7 +28,9 @@ class Product(db.Model, UserMixin):
     descricao = db.Column(db.Text, nullable=True)
 
 # Definição das rotas e funções
-
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 @app.route('/login', methods=['POST'])
 def log():
     data = request.json
@@ -39,10 +41,18 @@ def log():
         return jsonify({"message":"Login bem sucessido"})  
     return jsonify({"message":"Falha no login"}), 401
 
+@app.route('/logout', methods=['POST'])
+#@login_required
+def logout():
+    load_user()
+    return jsonify({"message":"Logout bem sucessido"})
+
+
+
 #Rota para add os produtos
 
 @app.route('/api/products/add' , methods=["POST"])
-@login_required
+#@login_required
 def add_produto():
     data = request.json
     if 'name' in data and 'price' in data:
@@ -55,7 +65,7 @@ def add_produto():
 #Rota para delete os produtos
 
 @app.route('/api/products/delete/<int:product_id>', methods=["DELETE"])
-
+#@login_required
 def delete_product(product_id):
     product = Product.query.get(product_id)
     if product:
@@ -112,11 +122,10 @@ def get_product(product_id):
             "id" : product.id ,
             "name" : product.name,
             "price" : product.price,
-            "description" : product.description
+            "description" :product.description
         })
         product_list.append(product_data)
 
     return jsonify(product_list)
-
 
 app.run(debug=True)
