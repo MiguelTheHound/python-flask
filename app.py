@@ -2,22 +2,23 @@
 from flask import Flask , request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
-app = Flask(__name__)
+from flask_login import UserMixin, login_required, login_user, LoginManager
 
+app = Flask(__name__)
+app.config['SECRET_KEY'] = "minha_chave_123"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 
+login_manager = LoginManager()
 db = SQLAlchemy(app)
-
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 CORS(app)
 
 #Criação do Lgin e do Logout
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    Username = db.Column(db.String(120), nullable=False, unique=True)
+    Username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
-
-
 
 #Modelagem do banco de dados(id,nome,preço,descrição)
 class Product(db.Model, UserMixin):
@@ -28,10 +29,20 @@ class Product(db.Model, UserMixin):
 
 # Definição das rotas e funções
 
+@app.route('/login', methods=['POST'])
+def log():
+    data = request.json
+
+    user = User.query.filter_by(Username=data.get("Username")).first()
+    if user and data.get("password") == user.password:
+        login_user(user)
+        return jsonify({"message":"Login bem sucessido"})  
+    return jsonify({"message":"Falha no login"}), 401
+
 #Rota para add os produtos
 
 @app.route('/api/products/add' , methods=["POST"])
-
+@login_required
 def add_produto():
     data = request.json
     if 'name' in data and 'price' in data:
@@ -106,12 +117,6 @@ def get_product(product_id):
         product_list.append(product_data)
 
     return jsonify(product_list)
-
-
-    
-
-
-
 
 
 app.run(debug=True)
