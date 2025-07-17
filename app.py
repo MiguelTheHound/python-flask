@@ -18,9 +18,9 @@ class Product(db.Model):
 
 # Definição das rotas e funções
 
-@app.route('/api/products/add' , methods=["POST"])
+#Rota para add os produtos
 
-@app.run(debug=True)
+@app.route('/api/products/add' , methods=["POST"])
 
 def add_produto():
     data = request.json
@@ -31,6 +31,8 @@ def add_produto():
         return "Produto cadastrado"
     return jsonify({"message":"Dados inválidos"}), 400
 
+#Rota para delete os produtos
+
 @app.route('/api/products/delete/<int:product_id>', methods=["DELETE"])
 
 def delete_product(product_id):
@@ -40,3 +42,46 @@ def delete_product(product_id):
         db.session.commit()
         return "Produto removido"
     return jsonify({"message":"Dados não encontrados"}), 404
+
+#Recuprar detalhes do produto
+
+@app.route('/api/products/<int:product_id>', methods=["GET"])
+
+def get_product_details(product_id):
+    product = Product.query.get(product_id)
+    if product:
+        return jsonify({
+            "id" : product.id ,
+            "name" : product.name,
+            "price" : product.price,
+            "description" : product.description
+        })
+    return jsonify({"message":"Dados não encontrados"}), 404
+
+#Actualizar produtos
+
+@app.route('/api/products/update/<int:product_id>', methods=["PUT"])
+
+def update_product(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        
+       return jsonify({"message":"Dados não encontrados"}), 404
+    
+    data = request.json
+    if 'name' in data :
+        product.name = data['name']
+    
+    if 'price' in data :
+        product.price = ['price']
+    
+    if 'description' in data :
+        product.description = ['description']
+
+    return jsonify({"message":"Dados actualizados"})
+
+
+
+
+
+app.run(debug=True)
