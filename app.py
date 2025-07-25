@@ -145,8 +145,24 @@ def add_to_cart(product_id):
     product = Product.query.get(product.id)
 
     if user and product:
+        cart_item = CartItem(user_id=user.id, product_id=product.id)
+        db.session.add(cart_item)
+        db.session.commit()
         return jsonify("Produto adicionado ao carrinho")
     return jsonify("Falha ao adicionar produto adicionado ao carrinho")
+
+#remover item
+
+@app.route('/api/cart/remove/<int:product_id>' , methods=['DELETE'])
+@login_required
+def remove_from_cart(product_id):
+    cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id= product_id.id).first()
+    
+    if cart_item:
+        db.session.delete(cart_item)
+        db.session.commit()
+        return jsonify("Produto removidoddo carrinho")
+    return jsonify("Falha ao remover produto do carrinho"), 400
 
 
 
