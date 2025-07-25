@@ -27,6 +27,12 @@ class Product(db.Model, UserMixin):
     preco = db.Column(db.Float, nullable=False)
     descricao = db.Column(db.Text, nullable=True)
 
+# Criação do carrinho
+class CartItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'),nullable=False)
+
 # Definição das rotas e funções
 @login_manager.user_loader
 def load_user(user_id):
@@ -46,7 +52,6 @@ def log():
 def logout():
     load_user()
     return jsonify({"message":"Logout bem sucessido"})
-
 
 
 #Rota para add os produtos
