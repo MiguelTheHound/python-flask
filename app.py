@@ -2,7 +2,7 @@
 from flask import Flask , request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, login_required, login_user, LoginManager, logout_user
+from flask_login import UserMixin, login_required, login_user, LoginManager, logout_user, current_user
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "minha_chave_123"
@@ -19,6 +19,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     Username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
+    cart = db.relationship('CartItem', backref='user', lazy=True)
 
 #Modelagem do banco de dados(id,nome,preço,descrição)
 class Product(db.Model, UserMixin):
@@ -49,7 +50,7 @@ def log():
 
 @app.route('/logout', methods=['POST'])
 #@login_required
-def logout():
+def logout_user():
     load_user()
     return jsonify({"message":"Logout bem sucessido"})
 
@@ -132,5 +133,25 @@ def get_product(product_id):
         product_list.append(product_data)
 
     return jsonify(product_list)
+
+#checkout
+@app.route('/api/cart/add/<int:product_id>' , methods=['POST'])
+@login_required
+
+def add_to_cart(product_id):
+    #usuario
+    user = User.query.get(int(current_user.id))
+    #produto
+    product = Product.query.get(product.id)
+
+    if user and product:
+        return jsonify("Produto adicionado ao carrinho")
+    return jsonify("Falha ao adicionar produto adicionado ao carrinho")
+
+
+
+
+
+
 
 app.run(debug=True)
