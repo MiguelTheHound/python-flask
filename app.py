@@ -190,16 +190,7 @@ def checkout():
     for cart_item in cart_items:
 
         db.session.delete()
-        db.session.commit()
+    db.session.commit()
     return jsonify({"message": "Checkout concluído"})
-
-
-
-
-
-
-
-
-
 
 app.run(debug=True)
